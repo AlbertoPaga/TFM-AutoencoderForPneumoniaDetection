@@ -1,2 +1,4 @@
 # TFM-AutoencoderForPneumoniaDetection
-This repositoyry have been created with the porpouse of be used for save all the used along the proyect, including the images used in trainning and test, the models trainned 
+This repositoyry have been created with the porpouse of be used for save all the used along the proyect, including the Goggle Colaboratory notebook where the practical parts have been done, the folders with images used in trainning and test (extracted from Kaggle repository https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia), the well-trainned developed models, and all the needings for the correct development of the work
+
+This project aims to be a continuous work and to improve the theoretical approach and models used in these scopes to date. For that, we introducing new points of view and different machine learning techniques, such as One Class Classification, which uses monoclass training methods to teach to specialized models to be experts in predefined class.
