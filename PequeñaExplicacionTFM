@@ -1,0 +1,72 @@
+#Resumen TFM
+
+- Cargo y presento los datos totales
+- Cargo imágenes y etiquetas para entrenamiento 
+- Cargo imagénes y etiquetas para pruebas
+- Están separadas entre imágenes sanas y enfermas para hacer dos generadores (1360 imágenes de entrenamiento para sanas y 3985 de enfermas, pero se reducirán a 1360 imágenes enfermas para igualarlas con las sanas y hacer un entrenamiento no sesgado
+- Definimos el Encoder, Decoder y lo juntamos en el Autoencoder. También hay dos de las tres cosas, uno de imágenes sanas y otro de imágenes enfermas. El objetivo es utilizar ambas en uno One-Class Classification de forma que cada una esté especializada y puedan clasificar mejor las imágenes
+- A **25/11/2022** tenemos los siguientes modelos:
+
+  - **Modelo 1** (128,128,3)->(128,128,128)->(128,128,128)->(64,64,128)->(64,64,64)->(64,64,32)->(32,32,32)->(32,32,16)->(32,32,8)->(16,16,8)
+
+  - **Modelo 2** (128,128,3)->(128,128,128)->(128,128,128)->(64,64,128)->(64,64,128)->(64,64,128)->(32,32,128)->(32,32,64)->(32,32,32)->(16,16,32)
+
+  - **Modelo 3** (128,128,3)->(128,128,128)->(128,128,128)->(64,64,128)->(64,64,64)->(64,64,32)->(32,32,32)->(32,32,16)->(32,32,8)->(16,16,8)
+
+  - **Modelo 4** (128,128,3)->(128,128,128)->(128,128,128)->(64,64,128)->(64,64,64)->(64,64,32)->(32,32,32)->(32,32,16)->(32,32,8)->(16,16,8)
+
+  - **Modelo 5** (128,128,3)->(128,128,128)->(128,128,128)->(64,64,128)->(64,64,64)->(64,64,32)->(32,32,32)->(32,32,16)->(32,32,8)->(16,16,8)
+
+
+- Entrenamos todos los modelos propuestos en dos history, uno para modelos de sanas y otro para modelos de enfermas, de 100 epochs y 42 pasos por epoch (el número de imágenes 1360 % 32)
+- A continuación se realiza la carga de las imágenes sanas y enfermas de entrenamiento (1360) para utilizarlas en el cálculo de valores estadísticos útiles
+-También se debe realizar la carga de las etiquetas de las imágenes de entrenamiento tanto sanas como enfermas para utilizarlas en el cálculo de valores estadísticos útiles
+- Guardado
+- Cargado
+- **Pruebas sobre modelo autencoder completo SANAS.** Durante estas pruebas se utilizará el modelo autoencoder completo que ha sido entrenado con las imágenes **SANAS** y para probar tan solo se usarán imágenes **SANAS**:
+  * Se calcula el **MSE medio** sobre las imágenes de entrenamiento **SANAS**. (0.00340803) Aquí se pretende saber qué error cuadrático tiene el modelo sobre imágenes **SANAS** con las que ha sido entrenado y así tener este valor de referencia para posteriormente poder comparar.
+  * Se cargan las imágenes **SANAS** de entrenamiento y realiza una prueba con una imagen aleatoria (Se muestran algunos valores útiles, la imagen original y luego la reconstruída)
+  * Se calcula el **MSE** sobre la imágen anteriormente utilizada (0.00381695) y la **similitud estructural** de ambas imágenes (0.64737413)
+  * Se muestra un mosaico con 30 imágenes originales **SANAS** de prueba y posteriormente otro mosaico con las 30 reconstrucciones de las mismas por parte del modelo
+  * Ahora se procede a calcular el **MSE** sobre las imágenes de prueba. (0.00334091) Así se quiere ver qué tan bien reconstruye el modelo las imágenes si comparamos el **MSE** sobre las imágenes de entrenamiento y el **MSE** sobre las imágenes de prueba.
+  * También se calcula la **similitud estructural media** (0.64931501) entre las imágenes **SANAS** de prueba originales y las reconstruídas por el modelo.
+- **Pruebas sobre modelo autoencoder completo ENFERMAS.** Durante estas pruebas se utilizará el modelo autoencoder completo que ha sido entrenado con las imágenes **ENFERMAS** y para probar tan solo se usarán imágenes **ENFERMAS**:
+  * Todos los pasos son iguales pero utilizando las imágenes de pulmones **ENFERMOS**.
+  * **MSE medio** sobre las imágenes de entrenamiento **ENFERMAS**: (0.00237647)
+  * **MSE** sobre la imágen aleatoria utilizada (0.00306953) y la **similitud estructural** de ambas imágenes (0.60328844)
+  * **MSE** sobre las imágenes de prueba: (0.00244281)
+  * **Similitud estructural media** (0.64931501) entre las imágenes **ENFERMAS** de prueba originales y las reconstruídas.
+- **Carga de la imágenes y etiquetas de pruebas.** Aquí se procede a la carga completa de imágenes de prueba y sus etiquetas correspondientes, tanto de **SANAS** como de **ENFERMAS**. Ambas se juntan en un mismo array **imagenes_sanas_enfermas_totales** compuesto por **468 imágenes** (234 **SANAS** y 234 **ENFERMAS**)
+- **Pruebas sobre ambos modelos con imagen ALEATORIA. Clasificación.** En estas pruebas se pretende probar qué tal clasificaría una imagen aleatoria (**SANA** o **ENFERMA**) cada uno de los modelos anteriormente presentados (modelo entrenado con **SANAS**, modelo entrenado con  **ENFERMAS**):
+  * Se presenta la imagen aleatoria que se intentará calsificar
+  * Se presenta la imagen ya reconstruida mediante el modelo **SANAS**, además se muestra el **MSE** y la **similitud estructural** de la misma.
+  * Se hace lo mismo pero con la imagen reconstruida mediante el modelo **ENFERMAS**. Se muestra el **MSE** y la **similitud estructural**.
+  * Se crea un **if/else** para clasificar la imágen en función de los valores establecidos de **MSE** y **similitud estructural** y los obtenidos en esta imagen en concreto. Los criterios de esta clausula es:
+    * if (**simil_enferma** > **simil_sana** and **mse_enferma** > **mse_sana**) then **ENFERMA** pero con posible error
+    * if (**simil_enferma** > **simil_sana** and **mse_sana** > **mse_enferma**) then **ENFERMA**
+    * if (**simil_sana** > **simil_enferma** and **mse_enferma** > mse_sana) then **SANA**
+    * if (**simil_sana** > **simil_enferma** and **mse_sana** > **mse_enferma**) then **SANA** pero con posible error
+    * if (**simil_sana** == **simil_enferma** and **mse_sana** > **mse_enferma**) then **NO SE PUEDE CLASIFICAR**
+  * Se realiza el mismo proceso resumido para otra imagen aleatoria.
+- **Pruebas sobre ambos modelos con imagenes previamente clasificadas.** Viendo los resultados anteriores, me plantée probar si todas las imágenes que sabemos que son **SANAS** se clasificarían como **SANAS** por nuestros modelos y lo mismo con las **ENFERMAS**. Para ello, se siguen los siguientes pasos probando primero con las imágenes **ENFERMAS** (234) y luego con las imágenes **SANAS** (234):
+  * Se crea un **bucle for** que va calculando el **MSE** de cada prediccion de imagen con cada uno de los dos modelos, tanto el **SANO** como el **ENFERMO**.
+  * A continuación hay unas **clausulas if/else** que van comparando los resultados y se encargan de realizar la clasificación. Los criterios de comparación son los siguientes:
+    * Si se estan probando imágenes **ENFERMAS** y el **mse_sana** > **mse_enferma** entonces la imagen será **ENFERMA**
+    * Else, entonces será **SANA** (Se obtiene un 100%)
+    * Si se estan probando imágenes **SANAS** y el **mse_enferma** > **mse_sana** entonces la imagen será **SANA**
+    * Else, entonces será **ENFERMA** (Se obtiene un 0%)
+- **Pruebas totales.** Estas son las pruebas más recientes, creadas para intentar mejorar las realizadas anteriormente y aplicando todo un poco para conseguir conclusiones sobre el desempeño de nuestro modelo en la tarea de clasificación:
+  * **PRUEBAS CON MSE:**
+  * El primer paso es obtener el **MSE medio** del autoencoder **SANO** (entrenado con imágenes **SANAS**) con las imágenes de entrenamiento. Además tambien se calcula la **mediana del MSE** con la intención de comparar los resultados de las pruebas con este dato y estimar su "acercamiento" o "alejamiento" al mismo, para así poder clasificar la imagen como **SANA** o **ENFERMA**.
+  * Seguidamente, se realiza en mismo proceso pero para el **MSE(media y mediana)** del autoencoder **ENFERMO** con sus imágenes de entrenamiento **ENFERMAS**
+  * Se crea un **bucle for** que va calculando el **MSE** de cada prediccion de imagen con cada uno de los dos modelos, tanto el **SANO** como el **ENFERMO**. En esta celda se utilizarán las imágenes de prueba **ENFERMAS** (234) y en la siguiente las imágenes de prueba **SANAS** (234)
+  * Se calcula el **MSE absoluto** de cada iteración de imagen, de dos formas formas, o  bien **restando** **mse** de la misma al **MSE medio** o, restándoselo a la **mediana del MSE**, ambas cosas anteriormente calculadas.
+  * A continuación hay unas **clausulas if/else** que van comparando los resultados y se encargan de realizar la clasificación. Los criterios de comparación son los siguientes:
+    * Si probamos con imágenes **ENFERMAS** y **mse_sana (absoluto)** > **mse_enferma (absoluto)** entonces la imagen será **ENFERMA**
+    * Si no, se tratará de una imagen **SANA**
+  * La siguiente celda hace el mismo proceso pero utilizando las imágenes **SANAS** (234) para probar su clasificación. Los criterios de sus **clausula if/else** son:
+    * Si probamos con imágenes **SANAS** y **mse_enferma (absoluto)** > **mse_sana (absoluto**) entonces la imagen será **SANA**
+    * Si no, se tratará de una imagen **ENFERMA**
+
+    * **PRUEBAS CON SIMILITUD ESTRUCTURAL:**
+    * Lo pasos son similares a los realizados en el sub-apartado anterior. Se calculan tanto la similitud estructural media como la similitud estructural mediana de ambos modelos (**SANO** y **ENFERMO**) cada uno sobre sus imágenes de entrenamiento. Posteriormente se procede a realizar las pruebas de clasificación, primero con las imágenes de prueba **ENFERMAS** y luego con las imágenes de prueba **SANAS**. Se utilizan ambos modelos y como se ha explicado anteriormente, se utilizan unos criterios de comparación basados en los datos anteriormente obtenidos y los calculados en cada uno de las iteraciones.
